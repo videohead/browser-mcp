@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Runtime data (storage-state sessions, browser artifacts, screenshots/PDFs)
+/data/
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,49 @@
+name: browser-mcp
+
+services:
+  browser-mcp:
+    build: .
+    image: browser-mcp:latest
+    container_name: browser-mcp
+    # Host user videohead (1001) : optusers (1005) so /data is host-writable.
+    user: "1001:1005"
+    ports:
+      # Loopback only: the agent-framework harness (network_mode: host) and the
+      # chatbot reach it here; not exposed to the LAN. Traefik can front it
+      # later if a public MCP route is wanted.
+      - "127.0.0.1:8010:8010"
+    environment:
+      # 0.0.0.0 inside the container so the published loopback port is
+      # reachable; the 127.0.0.1:8010:8010 mapping keeps it host-loopback-only.
+      BROWSER_MCP_HOST: "0.0.0.0"
+      BROWSER_MCP_PORT: "8010"
+      BROWSER_HEADLESS: "true"
+      # Bearer key for all non-health requests. Sourced from the same
+      # mcp-bridge secret convention as agent-framework-mcp.
+      MCP_BRIDGE_ENV_FILE: /run/mcp-bridge/.env
+      PYTHONDONTWRITEBYTECODE: "1"
+      LOG_LEVEL: "INFO"
+    volumes:
+      # Screenshots, PDFs, and saved storage state (authenticated sessions).
+      - ./data:/data
+      # Shared bearer-key secret (same volume the agent-framework stack uses).
+      - agent-framework-service_agent-framework-mcp-secrets:/run/mcp-bridge:ro
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    # Chromium needs a writable /tmp and /dev/shm even with read_only root.
+    tmpfs:
+      - /tmp
+      - /dev/shm
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  # Reuse the existing shared bearer-key secret volume (created by
+  # agent-framework-service's compose stack).
+  agent-framework-service_agent-framework-mcp-secrets:
+    external: true

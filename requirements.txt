@@ -1,0 +1,7 @@
+mcp>=1.30,<2
+# Pin to the exact version bundled in the base image (see Dockerfile). The
+# Chromium binary is version-locked to the playwright library.
+playwright==1.65.2
+uvicorn>=0.30
+python-dotenv>=1.0
+starlette>=0.37
